@@ -79,13 +79,70 @@ def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     model.summary()
 
     # Train the model
-    variant1 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
+    variant2 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
                          validation_data=(validSet_images, validSet_labels))
 
     # Save the model and training history
     model.save('./data/variant2_model.h5')
     with open('./data/variant2_history.json', 'w') as f:
-        json.dump(variant1.history, f)
+        json.dump(variant2.history, f)
+
+# change layer types
+def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
+    # Model architecture
+    model = tf.keras.Sequential([
+        layers.Conv2D(32, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(64, (3, 3), padding='valid'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        layers.Flatten(),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.5),
+        layers.Dense(10, activation='softmax')
+    ])
+
+    # Compile the model
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    # Train the model
+    variant3 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
+                         validation_data=(validSet_images, validSet_labels))
+
+    # Save the model and training history
+    model.save('./data/variant3_model.h5')
+    with open('./data/variant3_history.json', 'w') as f:
+        json.dump(variant3.history, f)
+
+# change activation functions
+def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
+    # Model architecture
+    model = tf.keras.Sequential([
+        layers.Conv2D(32, (3, 3), padding='valid', input_shape=(28, 28, 1)),
+        layers.LeakyReLU(alpha=0.1),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(64, (3, 3), padding='valid'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Flatten(),
+        layers.Dense(128),
+        layers.LeakyReLU(alpha=0.3),
+        layers.Dropout(0.5),
+        layers.Dense(10, activation='softmax')
+    ])
+
+    # Compile the model
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    # Train the model
+    variant4 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
+                         validation_data=(validSet_images, validSet_labels))
+
+    # Save the model and training history
+    model.save('./data/variant4_model.h5')
+    with open('./data/variant4_history.json', 'w') as f:
+        json.dump(variant4.history, f)
+
 
 def plotting(filename):
     # load model
@@ -169,18 +226,29 @@ if __name__ == "__main__":
     validSet_labels = keras.utils.to_categorical(validSet_labels, 10)
 
     # baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    filename1 = './data/baseline_history.json'
-    # plotting(filename1)
+    filename0 = './data/baseline_history.json'
+    # plotting(filename0)
 
     # variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # filename2 = './data/variant1_history.json'
-    # plotting(filename2)
-    # comparison(filename1, filename2)
+    # plotting(filename1)
+    # comparison(filename0, filename1)
 
-    variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    filename2 = './data/variant2_history.json'
-    plotting(filename2)
-    comparison(filename1, filename2)
+    # variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    # filename2 = './data/variant2_history.json'
+    # plotting(filename2)
+    # comparison(filename0, filename2)
+
+    # variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    # filename3 = './data/variant3_history.json'
+    # plotting(filename3)
+    # comparison(filename0, filename3)
+
+    variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    filename4= './data/variant4_history.json'
+    plotting(filename4)
+    comparison(filename0, filename4)
+
 
 
     # class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
