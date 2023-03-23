@@ -63,7 +63,6 @@ def plotting(filename):
     plt.show()
 
 if __name__ == "__main__":
-
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 
     # create new sets 0.8/0.2
