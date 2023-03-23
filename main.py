@@ -1,12 +1,10 @@
 import json
-import time
-
 import numpy as np
 import tensorflow as tf
 import keras
 from keras import layers
 from keras.datasets import fashion_mnist
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
@@ -79,7 +77,6 @@ def plotting(filename):
     plt.legend()
     plt.savefig(filename[:-5]+'_loss.png')
     plt.show()
-    time.sleep(5)
     plt.close()
 
     # Plot the training/validation accuracy per epoch
@@ -90,7 +87,6 @@ def plotting(filename):
     plt.legend()
     plt.savefig(filename[:-5] + '_acc.png')
     plt.show()
-    time.sleep(5)
     plt.close()
 
 def comparison(filename1, filename2):
@@ -149,13 +145,12 @@ if __name__ == "__main__":
     # baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     #
     filename1 = './data/baseline_history.json'
-    plotting(filename1)
-
+    #plotting(filename1)
+    #
     #variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     filename2 = './data/variant1_history.json'
-    plotting(filename2)
+    #plotting(filename2)
     comparison(filename1, filename2)
-
 
 
     # class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
