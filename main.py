@@ -4,18 +4,21 @@ import tensorflow as tf
 import keras
 from keras import layers
 from keras.datasets import fashion_mnist
+from PIL import Image
 import matplotlib.pyplot as plt
 
 def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
     model = tf.keras.Sequential([
-        layers.Conv2D(32, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='valid'),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (3, 3), padding='valid'),
+        layers.Conv2D(32, (3, 3), padding='valid'),
         layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
+        layers.Dropout(0.25),
         layers.Dense(10, activation='softmax')
     ])
 
@@ -36,19 +39,21 @@ def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
 def variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
     model = tf.keras.Sequential([
-        layers.Conv2D(64, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(32, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(32, (3, 3), padding='valid'),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(128, (3, 3), padding='valid'),
+        layers.Conv2D(32, (3, 3), padding='valid'),
         layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
+        layers.Dropout(0.25),
         layers.Dense(10, activation='softmax')
     ])
 
     # Compile the model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.summary()
+    # model.summary()
 
     # Train the model
     variant1 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
@@ -60,23 +65,25 @@ def variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
         json.dump(variant1.history, f)
 
 
-# increase kernel size
+# change activation
 def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
     model = tf.keras.Sequential([
-        layers.Conv2D(32, (5, 5), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='valid', activation='tanh'),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (5, 5), padding='valid'),
+        layers.Conv2D(32, (3, 3), padding='valid'),
         layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
+        layers.Dropout(0.25),
         layers.Dense(10, activation='softmax')
     ])
 
     # Compile the model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    model.summary()
+    # model.summary()
 
     # Train the model
     variant2 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
@@ -91,17 +98,21 @@ def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
 def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
     model = tf.keras.Sequential([
-        layers.Conv2D(32, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.BatchNormalization(),
+        layers.Conv2D(16, (3, 3), padding='valid'),
         layers.BatchNormalization(),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (3, 3), padding='valid'),
+        layers.Conv2D(32, (3, 3), padding='valid'),
         layers.BatchNormalization(),
         layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
+        layers.Dropout(0.25),
         layers.Dense(10, activation='softmax')
     ])
+
 
     # Compile the model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -115,22 +126,20 @@ def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     with open('./data/variant3_history.json', 'w') as f:
         json.dump(variant3.history, f)
 
-# change activation functions
+# change padding
 def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
-    # Model architecture
     model = tf.keras.Sequential([
-        layers.Conv2D(32, (3, 3), padding='valid', input_shape=(28, 28, 1)),
-        layers.LeakyReLU(alpha=0.1),
+        layers.Conv2D(16, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='same'),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (3, 3), padding='valid'),
+        layers.Conv2D(32, (3, 3), padding='same'),
         layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
         layers.Flatten(),
-        layers.Dense(128),
-        layers.LeakyReLU(alpha=0.3),
-        layers.Dropout(0.5),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.25),
         layers.Dense(10, activation='softmax')
     ])
-
     # Compile the model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
@@ -203,6 +212,20 @@ def comparison(filename1, filename2):
     plt.show()
     plt.close()
 
+def testing(filename):
+    model = tf.keras.models.load_model(filename)
+
+    # Preprocess the image
+    image = Image.open("./images.jpeg").convert('L')
+    image = image.resize((28, 28))  # Resize the image to (28, 28)
+    image = np.array(image)
+    image = image.reshape(1, 28, 28, 1)  # Reshape the image to (1, 28, 28, 1) to match the model's input shape
+
+    # Make a prediction
+    prediction = model.predict(image)
+    predicted_class = np.argmax(prediction)
+
+    print("Predicted class:", predicted_class)
 
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
@@ -230,7 +253,7 @@ if __name__ == "__main__":
     # plotting(filename0)
 
     # variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    # filename2 = './data/variant1_history.json'
+    # filename1 = './data/variant1_history.json'
     # plotting(filename1)
     # comparison(filename0, filename1)
 
@@ -244,12 +267,12 @@ if __name__ == "__main__":
     # plotting(filename3)
     # comparison(filename0, filename3)
 
-    variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    filename4= './data/variant4_history.json'
-    plotting(filename4)
-    comparison(filename0, filename4)
+    # variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    # filename4= './data/variant4_history.json'
+    # plotting(filename4)
+    # comparison(filename0, filename4)
 
-
+    testing('./data/variant3_model.h5')
 
     # class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
     #                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
