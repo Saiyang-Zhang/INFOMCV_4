@@ -35,6 +35,7 @@ def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     with open('./data/baseline_history.json', 'w') as f:
         json.dump(baseline.history, f)
 
+
 # increase number of kernels
 def variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
@@ -56,12 +57,20 @@ def variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # model.summary()
 
     # Train the model
+    # variant1 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
+    #                      validation_data=(validSet_images, validSet_labels))
     variant1 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels))
+                         validation_split=0.2)
+
+    # Evaluate both models on the test set
+    model.evaluate(validSet_images, validSet_labels)
 
     # Save the model and training history
-    model.save('./data/variant1_model.h5')
-    with open('./data/variant1_history.json', 'w') as f:
+    # model.save('./data/variant1_model.h5')
+    # with open('./data/variant1_history.json', 'w') as f:
+    #     json.dump(variant1.history, f)
+    model.save('./data/best1_model.h5')
+    with open('./data/best1_history.json', 'w') as f:
         json.dump(variant1.history, f)
 
 
@@ -93,6 +102,7 @@ def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     model.save('./data/variant2_model.h5')
     with open('./data/variant2_history.json', 'w') as f:
         json.dump(variant2.history, f)
+
 
 # change layer types
 def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
@@ -126,6 +136,7 @@ def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     with open('./data/variant3_history.json', 'w') as f:
         json.dump(variant3.history, f)
 
+
 # change padding
 def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     model = tf.keras.Sequential([
@@ -144,15 +155,24 @@ def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     # Train the model
+    # variant4 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
+    #                      validation_data=(validSet_images, validSet_labels))
     variant4 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels))
+                         validation_split=0.2)
+
+    # Evaluate both models on the test set
+    model.evaluate(validSet_images, validSet_labels)
 
     # Save the model and training history
-    model.save('./data/variant4_model.h5')
-    with open('./data/variant4_history.json', 'w') as f:
+    # model.save('./data/variant4_model.h5')
+    # with open('./data/variant4_history.json', 'w') as f:
+    #     json.dump(variant4.history, f)
+    model.save('./data/best2_model.h5')
+    with open('./data/best2_history.json', 'w') as f:
         json.dump(variant4.history, f)
 
 
+# plotting for a single model
 def plotting(filename):
     # load model
     # model = tf.keras.saving.load_model(filename)
@@ -162,8 +182,8 @@ def plotting(filename):
         history = json.load(f)
 
     # Plot the training/validation loss per epoch
-    plt.plot(history['loss'], label='Training Loss')
-    plt.plot(history['val_loss'], label='Validation Loss')
+    plt.plot(history['loss'], label='Training loss')
+    plt.plot(history['val_loss'], label='Validation loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
@@ -181,6 +201,8 @@ def plotting(filename):
     plt.show()
     plt.close()
 
+
+# plotting for pairwise comparison
 def comparison(filename1, filename2):
     # Load the history
     with open(filename1, 'r') as f:
@@ -189,10 +211,10 @@ def comparison(filename1, filename2):
         history2 = json.load(f)
 
     # Plot the training/validation loss per epoch
-    plt.plot(history1['loss'], label='Training Loss 1', color='C0')
-    plt.plot(history1['val_loss'], label='Validation Loss 1', color='C1')
-    plt.plot(history2['loss'], label='Training Loss 2',linestyle='--', color='C0')
-    plt.plot(history2['val_loss'], label='Validation Loss 2',linestyle='--', color='C1')
+    plt.plot(history1['loss'], label='Training loss 1', color='C0')
+    plt.plot(history1['val_loss'], label='Validation loss 1', color='C1')
+    plt.plot(history2['loss'], label='Training loss 2',linestyle='--', color='C0')
+    plt.plot(history2['val_loss'], label='Validation loss 2',linestyle='--', color='C1')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
@@ -212,6 +234,64 @@ def comparison(filename1, filename2):
     plt.show()
     plt.close()
 
+# compare to choose the best model
+def best_comparison(filename):
+    # Load the history
+    history = []
+    for fn in filename:
+        with open(fn, 'r') as f:
+            history.append(json.load(f))
+
+    color = ['C0', 'C1', 'C2', 'C3', 'C4']
+    # Plot the training/validation loss per epoch
+    for i in range(len(history)):
+        plt.plot(history[i]['val_loss'], label= f'Validation loss {i}', color=color[i])
+        avg_val_loss = np.mean(history[i]['val_loss'])
+        min_val_loss = np.min(history[i]['val_loss'])
+        print(f'Average val_loss {i}: {avg_val_loss:.4f}')
+        print(f'Min val_loss {i}: {min_val_loss:.4f}')
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    # plt.savefig('./data/best_val_loss.png')
+    plt.show()
+    plt.close()
+
+    for i in range(len(history)):
+        plt.plot(history[i]['val_accuracy'], label= f'Validation accuracy {i}', color=color[i])
+        avg_val_acc = np.mean(history[i]['val_accuracy'])
+        max_val_acc = np.max(history[i]['val_accuracy'])
+        print(f'Average val_accuracy {i}: {avg_val_acc:.4f}')
+        print(f'Max val_accuracy {i}: {max_val_acc:.4f}')
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    # plt.savefig('./data/best_val_accuracy.png')
+    plt.show()
+    plt.close()
+
+    # for i in range(len(history)):
+    #     plt.plot(history[i]['loss'], label=f'Training loss {i}', color=color[i])
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Loss')
+    # plt.legend()
+    # plt.savefig('./data/best_training_loss.png')
+    # plt.show()
+    # plt.close()
+
+    # for i in range(len(history)):
+    #     plt.plot(history[i]['accuracy'], label=f'Training accuracy {i}', color=color[i])
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Accuracy')
+    # plt.legend()
+    # plt.savefig('./data/best_training_accuracy.png')
+    # plt.show()
+    # plt.close()
+
+
+# prediction testing
 def testing(filename):
     model = tf.keras.models.load_model(filename)
 
@@ -227,9 +307,11 @@ def testing(filename):
 
     print("Predicted class:", predicted_class)
 
+
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 
+    """Get the best models"""
     # create new sets 0.8/0.2
     train_num = int(0.8 * len(train_images))
     trainSet_images = train_images[:train_num]
@@ -253,27 +335,53 @@ if __name__ == "__main__":
     # plotting(filename0)
 
     # variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    # filename1 = './data/variant1_history.json'
+    filename1 = './data/variant1_history.json'
     # plotting(filename1)
     # comparison(filename0, filename1)
 
     # variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    # filename2 = './data/variant2_history.json'
+    filename2 = './data/variant2_history.json'
     # plotting(filename2)
     # comparison(filename0, filename2)
 
     # variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    # filename3 = './data/variant3_history.json'
+    filename3 = './data/variant3_history.json'
     # plotting(filename3)
     # comparison(filename0, filename3)
 
     # variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
-    # filename4= './data/variant4_history.json'
+    filename4= './data/variant4_history.json'
     # plotting(filename4)
     # comparison(filename0, filename4)
 
-    testing('./data/variant3_model.h5')
+    # choose the best performaing model (result: variant1 and variant4)
+    # best_comparison([filename0, filename1, filename2, filename3, filename4])
 
+    """Train on the best models"""
+    train_images = train_images / 255.0
+    test_images = test_images / 255.0
+
+    # Combine the training and validation sets
+    train_images_all = tf.concat([train_images, test_images], axis=0)
+    train_labels_all = tf.concat([train_labels, test_labels], axis=0)
+
+    # Convert labels
+    train_labels_all = keras.utils.to_categorical(train_labels_all, 10)
+    test_labels = keras.utils.to_categorical(test_labels, 10)
+
+    # variant1(train_images_all, train_labels_all, test_images, test_labels)
+    filename_b1 = './data/best1_history.json'
+    # plotting(filename_b1)
+    # variant4(train_images_all, train_labels_all, test_images, test_labels)
+    filename_b2 = './data/best2_history.json'
+    # plotting(filename_b2)
+    # comparison(filename_b1, filename_b2)
+
+
+    testing('./data/best1_model.h5')
+
+
+    """delete later"""
     # class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
     #                'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
     # plt.figure(figsize=(10,10))
