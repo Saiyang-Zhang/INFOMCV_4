@@ -1,11 +1,36 @@
-import json
-import numpy as np
-import tensorflow as tf
-import keras
 from keras import layers
+from keras import backend as K
 from keras.datasets import fashion_mnist
 from PIL import Image
+
+import json
+import keras
 import matplotlib.pyplot as plt
+import numpy as np
+import tensorflow as tf
+
+def outputs(model, images, savepath):
+    extractor = keras.Model(inputs=model.inputs,
+                        outputs=[layer.output for layer in model.layers])
+
+    features = extractor(images[:1])
+    
+    fig = plt.figure(figsize=(50, 20))
+    n = len(features)
+    p = 1
+    for i in range(n):
+        if len(features[i].shape) == 4:
+            p += 1
+    for i, feature in enumerate(features):
+        if len(feature.shape) == 4:
+            plt.subplot(1, p, i+1)
+            plt.imshow(feature[0, :, :, 0], cmap='viridis')
+        if i == n-1:
+            plt.subplot(1, p, p)
+            plt.imshow(feature, cmap='viridis')
+        plt.axis('off')
+        plt.title(model.layers[i].name, fontsize=36)
+    plt.savefig(savepath)
 
 def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
