@@ -2,11 +2,13 @@ from keras import layers
 from keras import backend as K
 from keras.datasets import fashion_mnist
 from PIL import Image
+from sklearn.metrics import confusion_matrix
 
 import json
 import keras
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import tensorflow as tf
 
 def outputs(model, images, savepath):
@@ -15,7 +17,7 @@ def outputs(model, images, savepath):
 
     features = extractor(images[:1])
     
-    fig = plt.figure(figsize=(50, 20))
+    fig = plt.figure(figsize=(50, 20), tight_layout=True)
     n = len(features)
     p = 1
     for i in range(n):
@@ -31,6 +33,16 @@ def outputs(model, images, savepath):
         plt.axis('off')
         plt.title(model.layers[i].name, fontsize=36)
     plt.savefig(savepath)
+
+def confusion(model, images, labels, save_path):
+    pred = np.argmax(model.predict(images), axis=1)
+    cm = confusion_matrix(labels, pred)
+    plt.figure(figsize=(8,8), tight_layout=True)
+    sns.heatmap(cm, annot=True, cmap=plt.cm.Blues, square=True, fmt='g')
+    plt.xlabel('Predicted label')
+    plt.ylabel('True label')
+    plt.title('Confusion matrix')
+    plt.savefig(save_path)
 
 def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
