@@ -5,6 +5,7 @@ from keras.datasets import fashion_mnist
 from PIL import Image
 from sklearn.metrics import confusion_matrix
 
+import os
 import json
 import keras
 import matplotlib.pyplot as plt
@@ -389,6 +390,25 @@ def outputs(model, images, savepath):
         plt.title(model.layers[i].name, fontsize=36)
     plt.savefig(savepath)
 
+# display weights
+def weights(filename):
+    models = []
+    models_name = []
+
+    for fn in os.listdir(filename):
+        if fn.endswith(".h5"):
+            model_path = os.path.join(filename, fn)
+            model = tf.keras.models.load_model(model_path)
+            models.append(model)
+            models_name.append(fn[:-3])
+
+    # Print the weights of each model
+    for i in range(len(models)):
+        print(models_name[i], ":")
+        for layer in models[i].layers:
+            print(layer.name, ":", layer.get_weights())
+
+
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 
@@ -466,6 +486,7 @@ if __name__ == "__main__":
     # plotting(filename_lr)
     # comparison(filename0, filename_lr)
 
+    weights('./weights')
 
 
     """delete later"""
