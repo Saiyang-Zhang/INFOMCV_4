@@ -399,6 +399,7 @@ def weights(filename):
         if fn.endswith(".h5"):
             model_path = os.path.join(filename, fn)
             model = tf.keras.models.load_model(model_path)
+            # model.sum()
             models.append(model)
             models_name.append(fn[:-3])
 
