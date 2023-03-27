@@ -36,8 +36,7 @@ def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # Train the model
     baseline = model.fit(trainSet_images, trainSet_labels, 
                          batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels),
-                         callbacks=[lr_scheduler])
+                         validation_data=(validSet_images, validSet_labels))
 
     # Save the model and training history
     model.save('./data/baseline_model.h5')
@@ -70,8 +69,7 @@ def variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     #                      validation_data=(validSet_images, validSet_labels))
     variant1 = model.fit(trainSet_images, trainSet_labels, 
                          batch_size=128, epochs=15,
-                         validation_split=0.2,
-                         callbacks=[lr_scheduler])
+                         validation_split=0.2)
 
     # Evaluate both models on the test set
     model.evaluate(validSet_images, validSet_labels)
@@ -108,8 +106,7 @@ def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # Train the model
     variant2 = model.fit(trainSet_images, trainSet_labels, 
                          batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels),
-                         callbacks=[lr_scheduler])
+                         validation_data=(validSet_images, validSet_labels))
 
     # Save the model and training history
     model.save('./data/variant2_model.h5')
@@ -143,8 +140,7 @@ def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # Train the model
     variant3 = model.fit(trainSet_images, trainSet_labels, 
                          batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels),
-                         callbacks=[lr_scheduler])
+                         validation_data=(validSet_images, validSet_labels))
 
     # Save the model and training history
     model.save('./data/variant3_model.h5')
@@ -174,8 +170,7 @@ def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     #                      validation_data=(validSet_images, validSet_labels))
     variant4 = model.fit(trainSet_images, trainSet_labels, 
                          batch_size=128, epochs=15,
-                         validation_split=0.2,
-                         callbacks=[lr_scheduler])
+                         validation_split=0.2)
 
     # Evaluate both models on the test set
     model.evaluate(validSet_images, validSet_labels)
@@ -191,9 +186,6 @@ def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
 
 # plotting for a single model
 def plotting(filename):
-    # load model
-    # model = tf.keras.saving.load_model(filename)
-
     # Load the history
     with open(filename, 'r') as f:
         history = json.load(f)
@@ -324,29 +316,8 @@ def testing(filename):
 
     print("Predicted class:", predicted_class)
 
-def outputs(model, images, savepath):
-    extractor = keras.Model(inputs=model.inputs,
-                        outputs=[layer.output for layer in model.layers])
 
-    features = extractor(images[:1])
-    
-    fig = plt.figure(figsize=(50, 20), tight_layout=True)
-    n = len(features)
-    p = 1
-    for i in range(n):
-        if len(features[i].shape) == 4:
-            p += 1
-    for i, feature in enumerate(features):
-        if len(feature.shape) == 4:
-            plt.subplot(1, p, i+1)
-            plt.imshow(feature[0, :, :, 0], cmap='viridis')
-        if i == n-1:
-            plt.subplot(1, p, p)
-            plt.imshow(feature, cmap='viridis')
-        plt.axis('off')
-        plt.title(model.layers[i].name, fontsize=36)
-    plt.savefig(savepath)
-
+# choice task 1: confusion matrix
 def confusion(model, images, labels, save_path):
     pred = np.argmax(model.predict(images), axis=1)
     cm = confusion_matrix(labels, pred)
@@ -356,6 +327,67 @@ def confusion(model, images, labels, save_path):
     plt.ylabel('True label')
     plt.title('Confusion matrix')
     plt.savefig(save_path)
+
+# choice task 2: decrease the learning rate
+def learningRateDec(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
+    # Model architecture
+    model = tf.keras.Sequential([
+        layers.Conv2D(16, (3, 3), padding='valid', activation='relu', input_shape=(28, 28, 1)),
+        layers.Conv2D(16, (3, 3), padding='valid'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(32, (3, 3), padding='valid'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
+        layers.Flatten(),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.25),
+        layers.Dense(10, activation='softmax')
+    ])
+
+    # Compile the model
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.summary()
+
+    # Train the model
+    learningRateDec = model.fit(trainSet_images, trainSet_labels,
+                         batch_size=128, epochs=15,
+                         validation_data=(validSet_images, validSet_labels),
+                         callbacks=[lr_scheduler])
+
+    # Convert the learning rate to a Python float
+    lr_value = float(np.array(learningRateDec.history['lr'])[0])
+    learningRateDec_new = learningRateDec.history.copy()
+    learningRateDec_new['lr'] = lr_value
+
+    # Save the model and training history
+    model.save('./data/learningRateDec_model.h5')
+    with open('./data/learningRateDec_history.json', 'w') as f:
+        json.dump(learningRateDec_new, f)
+
+
+# choice task 4: create output layers
+def outputs(model, images, savepath):
+    extractor = keras.Model(inputs=model.inputs,
+                            outputs=[layer.output for layer in model.layers])
+
+    features = extractor(images[:1])
+
+    fig = plt.figure(figsize=(50, 20), tight_layout=True)
+    n = len(features)
+    p = 1
+    for i in range(n):
+        if len(features[i].shape) == 4:
+            p += 1
+    for i, feature in enumerate(features):
+        if len(feature.shape) == 4:
+            plt.subplot(1, p, i + 1)
+            plt.imshow(feature[0, :, :, 0], cmap='viridis')
+        if i == n - 1:
+            plt.subplot(1, p, p)
+            plt.imshow(feature, cmap='viridis')
+        plt.axis('off')
+        plt.title(model.layers[i].name, fontsize=36)
+    plt.savefig(savepath)
 
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
@@ -379,7 +411,7 @@ if __name__ == "__main__":
     trainSet_labels = keras.utils.to_categorical(trainSet_labels, 10)
     validSet_labels = keras.utils.to_categorical(validSet_labels, 10)
 
-    baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    # baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     filename0 = './data/baseline_history.json'
     # plotting(filename0)
 
@@ -428,6 +460,12 @@ if __name__ == "__main__":
 
 
     # testing('./data/best1_model.h5')
+
+    # learningRateDec(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    filename_lr = './data/learningRateDec_history.json'
+    # plotting(filename_lr)
+    # comparison(filename0, filename_lr)
+
 
 
     """delete later"""
