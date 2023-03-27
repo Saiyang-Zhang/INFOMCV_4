@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-model = keras.models.load_model("/baseline_model.h5")
+model = keras.models.load_model("./data/variant1_model.h5")
 
 (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 
@@ -36,4 +36,4 @@ def outputs(model, images, savepath):
         plt.title(model.layers[i].name, fontsize=36)
     plt.savefig(savepath)
 
-outputs(model, test_images, 'a.pdf')
+outputs(model, test_images, 'variant1.pdf')

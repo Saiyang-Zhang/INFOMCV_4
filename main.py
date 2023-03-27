@@ -49,16 +49,16 @@ def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
 
     # Compile the model
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    # model.summary()
+    model.summary()
 
     # Train the model
-    baseline = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels))
+    # baseline = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
+    #                      validation_data=(validSet_images, validSet_labels))
 
     # Save the model and training history
-    model.save('./data/baseline_model.h5')
-    with open('./data/baseline_history.json', 'w') as f:
-        json.dump(baseline.history, f)
+    # model.save('./data/baseline_model.h5')
+    # with open('./data/baseline_history.json', 'w') as f:
+    #     json.dump(baseline.history, f)
 
 
 # increase number of kernels
@@ -129,7 +129,7 @@ def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
         json.dump(variant2.history, f)
 
 
-# change layer types
+# add Batch Normalization
 def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
     model = tf.keras.Sequential([
@@ -355,7 +355,7 @@ if __name__ == "__main__":
     trainSet_labels = keras.utils.to_categorical(trainSet_labels, 10)
     validSet_labels = keras.utils.to_categorical(validSet_labels, 10)
 
-    # baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
+    baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     filename0 = './data/baseline_history.json'
     # plotting(filename0)
 
@@ -403,7 +403,7 @@ if __name__ == "__main__":
     # comparison(filename_b1, filename_b2)
 
 
-    testing('./data/best1_model.h5')
+    # testing('./data/best1_model.h5')
 
 
     """delete later"""
