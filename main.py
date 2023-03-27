@@ -421,8 +421,8 @@ def topAcc(filename):
     for i in range(len(history)):
         topAcc_tra = max(history[i]['accuracy'])
         topAcc_val = max(history[i]['val_accuracy'])
-        print(models_name[i], ':\nTop-1 training accuracy:', topAcc_tra,
-              ', Top-1 validation accuracy:', topAcc_val)
+        print(models_name[i], ':\nTop-1 training accuracy:', topAcc_tra*100,
+              ', Top-1 validation accuracy:', topAcc_val*100)
 
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
