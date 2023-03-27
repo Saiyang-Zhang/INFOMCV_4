@@ -399,7 +399,8 @@ def weights(filename):
         if fn.endswith(".h5"):
             model_path = os.path.join(filename, fn)
             model = tf.keras.models.load_model(model_path)
-            # model.sum()
+            # print("\n", fn[:-3], ":")
+            # model.summary()
             models.append(model)
             models_name.append(fn[:-3])
 
@@ -502,8 +503,8 @@ if __name__ == "__main__":
     # plotting(filename_lr)
     # comparison(filename0, filename_lr)
 
-    # weights('./weights')
-    topAcc([filename0, filename1, filename2, filename3, filename4])
+    weights('./weights')
+    # topAcc([filename0, filename1, filename2, filename3, filename4])
 
     """delete later"""
     # class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
