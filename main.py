@@ -1,5 +1,6 @@
 from keras import layers
 from keras import backend as K
+from keras.callbacks import ReduceLROnPlateau
 from keras.datasets import fashion_mnist
 from PIL import Image
 from sklearn.metrics import confusion_matrix
@@ -11,38 +12,7 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 
-def outputs(model, images, savepath):
-    extractor = keras.Model(inputs=model.inputs,
-                        outputs=[layer.output for layer in model.layers])
-
-    features = extractor(images[:1])
-    
-    fig = plt.figure(figsize=(50, 20), tight_layout=True)
-    n = len(features)
-    p = 1
-    for i in range(n):
-        if len(features[i].shape) == 4:
-            p += 1
-    for i, feature in enumerate(features):
-        if len(feature.shape) == 4:
-            plt.subplot(1, p, i+1)
-            plt.imshow(feature[0, :, :, 0], cmap='viridis')
-        if i == n-1:
-            plt.subplot(1, p, p)
-            plt.imshow(feature, cmap='viridis')
-        plt.axis('off')
-        plt.title(model.layers[i].name, fontsize=36)
-    plt.savefig(savepath)
-
-def confusion(model, images, labels, save_path):
-    pred = np.argmax(model.predict(images), axis=1)
-    cm = confusion_matrix(labels, pred)
-    plt.figure(figsize=(8,8), tight_layout=True)
-    sns.heatmap(cm, annot=True, cmap=plt.cm.Blues, square=True, fmt='g')
-    plt.xlabel('Predicted label')
-    plt.ylabel('True label')
-    plt.title('Confusion matrix')
-    plt.savefig(save_path)
+lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5)
 
 def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels):
     # Model architecture
@@ -64,13 +34,15 @@ def baseline(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     model.summary()
 
     # Train the model
-    # baseline = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-    #                      validation_data=(validSet_images, validSet_labels))
+    baseline = model.fit(trainSet_images, trainSet_labels, 
+                         batch_size=128, epochs=15,
+                         validation_data=(validSet_images, validSet_labels),
+                         callbacks=[lr_scheduler])
 
     # Save the model and training history
-    # model.save('./data/baseline_model.h5')
-    # with open('./data/baseline_history.json', 'w') as f:
-    #     json.dump(baseline.history, f)
+    model.save('./data/baseline_model.h5')
+    with open('./data/baseline_history.json', 'w') as f:
+        json.dump(baseline.history, f)
 
 
 # increase number of kernels
@@ -96,8 +68,10 @@ def variant1(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # Train the model
     # variant1 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
     #                      validation_data=(validSet_images, validSet_labels))
-    variant1 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_split=0.2)
+    variant1 = model.fit(trainSet_images, trainSet_labels, 
+                         batch_size=128, epochs=15,
+                         validation_split=0.2,
+                         callbacks=[lr_scheduler])
 
     # Evaluate both models on the test set
     model.evaluate(validSet_images, validSet_labels)
@@ -132,8 +106,10 @@ def variant2(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # model.summary()
 
     # Train the model
-    variant2 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels))
+    variant2 = model.fit(trainSet_images, trainSet_labels, 
+                         batch_size=128, epochs=15,
+                         validation_data=(validSet_images, validSet_labels),
+                         callbacks=[lr_scheduler])
 
     # Save the model and training history
     model.save('./data/variant2_model.h5')
@@ -165,8 +141,10 @@ def variant3(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     # Train the model
-    variant3 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_data=(validSet_images, validSet_labels))
+    variant3 = model.fit(trainSet_images, trainSet_labels, 
+                         batch_size=128, epochs=15,
+                         validation_data=(validSet_images, validSet_labels),
+                         callbacks=[lr_scheduler])
 
     # Save the model and training history
     model.save('./data/variant3_model.h5')
@@ -194,8 +172,10 @@ def variant4(trainSet_images, trainSet_labels, validSet_images, validSet_labels)
     # Train the model
     # variant4 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
     #                      validation_data=(validSet_images, validSet_labels))
-    variant4 = model.fit(trainSet_images, trainSet_labels, batch_size=128, epochs=15,
-                         validation_split=0.2)
+    variant4 = model.fit(trainSet_images, trainSet_labels, 
+                         batch_size=128, epochs=15,
+                         validation_split=0.2,
+                         callbacks=[lr_scheduler])
 
     # Evaluate both models on the test set
     model.evaluate(validSet_images, validSet_labels)
@@ -344,6 +324,38 @@ def testing(filename):
 
     print("Predicted class:", predicted_class)
 
+def outputs(model, images, savepath):
+    extractor = keras.Model(inputs=model.inputs,
+                        outputs=[layer.output for layer in model.layers])
+
+    features = extractor(images[:1])
+    
+    fig = plt.figure(figsize=(50, 20), tight_layout=True)
+    n = len(features)
+    p = 1
+    for i in range(n):
+        if len(features[i].shape) == 4:
+            p += 1
+    for i, feature in enumerate(features):
+        if len(feature.shape) == 4:
+            plt.subplot(1, p, i+1)
+            plt.imshow(feature[0, :, :, 0], cmap='viridis')
+        if i == n-1:
+            plt.subplot(1, p, p)
+            plt.imshow(feature, cmap='viridis')
+        plt.axis('off')
+        plt.title(model.layers[i].name, fontsize=36)
+    plt.savefig(savepath)
+
+def confusion(model, images, labels, save_path):
+    pred = np.argmax(model.predict(images), axis=1)
+    cm = confusion_matrix(labels, pred)
+    plt.figure(figsize=(8,8), tight_layout=True)
+    sns.heatmap(cm, annot=True, cmap=plt.cm.Blues, square=True, fmt='g')
+    plt.xlabel('Predicted label')
+    plt.ylabel('True label')
+    plt.title('Confusion matrix')
+    plt.savefig(save_path)
 
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
