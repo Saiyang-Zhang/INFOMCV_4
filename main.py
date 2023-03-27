@@ -408,6 +408,21 @@ def weights(filename):
         for layer in models[i].layers:
             print(layer.name, ":", layer.get_weights())
 
+# get top-1 accuracy
+def topAcc(filename):
+    # Load the history
+    history = []
+    models_name = []
+    for fn in filename:
+        with open(fn, 'r') as f:
+            history.append(json.load(f))
+            models_name.append(fn[7:-13])
+
+    for i in range(len(history)):
+        topAcc_tra = max(history[i]['accuracy'])
+        topAcc_val = max(history[i]['val_accuracy'])
+        print(models_name[i], ':\nTop-1 training accuracy:', topAcc_tra,
+              ', Top-1 validation accuracy:', topAcc_val)
 
 if __name__ == "__main__":
     (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
@@ -486,8 +501,8 @@ if __name__ == "__main__":
     # plotting(filename_lr)
     # comparison(filename0, filename_lr)
 
-    weights('./weights')
-
+    # weights('./weights')
+    topAcc([filename0, filename1, filename2, filename3, filename4])
 
     """delete later"""
     # class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
