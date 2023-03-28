@@ -1,3 +1,4 @@
+import main
 from keras import layers
 from keras import backend as K
 from keras.datasets import fashion_mnist
@@ -11,7 +12,7 @@ import numpy as np
 import seaborn as sns
 import tensorflow as tf
 
-model = keras.models.load_model("./data/variant1_model.h5")
+model = keras.models.load_model("./data/variant4_model.h5")
 
 (train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 
@@ -25,7 +26,7 @@ def confusion(model, images, labels, save_path):
     plt.title('Confusion matrix')
     plt.savefig(save_path)
 
-confusion(model, test_images, test_labels, 'b.pdf')
+# main.confusion(model, test_images, test_labels, 'variant4_confusion.pdf')
 
 # def outputs(model, images, savepath):
 #     extractor = keras.Model(inputs=model.inputs,
@@ -50,4 +51,4 @@ confusion(model, test_images, test_labels, 'b.pdf')
 #         plt.title(model.layers[i].name, fontsize=36)
 #     plt.savefig(savepath)
 
-# outputs(model, test_images, 'variant1.pdf')
+main.outputs(model, test_images, 'variant4_outputs.pdf')
